@@ -1,5 +1,6 @@
+from collections import defaultdict
+from math import log
 from random import shuffle
-import treebuilder
 import pandas as pd
 
 continuity_check = [0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1]
@@ -42,13 +43,13 @@ def replace_none_in_table(table):
     return table
 
 
-def non_continuous(column_set, read_value):
-    if not column_set.has_key(read_value):
-        column_set[read_value] = len(column_set)
-    return column_set[read_value]
+# def non_continuous(column_set, read_value):
+#     if not column_set.has_key(read_value):
+#         column_set[read_value] = len(column_set)
+#     return column_set[read_value]
 
 
-def fill_row(continuous, column_set, value):
+def fill_row(continuous, value):
     if value == '?':
         return None
     if continuous:
@@ -57,17 +58,19 @@ def fill_row(continuous, column_set, value):
         except ValueError:
             return float(value)
     else:
-        return non_continuous(column_set, value)
+        # return non_continuous(column_set, value)
+        return value
 
 
 def construct_table():
     table = []
     label = []
-    table_line = {i: {} for i in range(columns)}
+    # table_line = {i: {} for i in range(columns)}
     crx_data = open('crx.data.txt', 'r')
     for line in crx_data:
         data_line = line.strip().split(',')
-        row_data = [fill_row(continuity_check[i], table_line[i], data_line[i]) for i in xrange(columns)]
+        # row_data = [fill_row(continuity_check[i], table_line[i], data_line[i]) for i in xrange(columns)]
+        row_data = [fill_row(continuity_check[i], data_line[i]) for i in xrange(columns)]
         table.append(row_data)
         if data_line[len(data_line) - 1] == '+':
             label.append(1)
@@ -111,22 +114,39 @@ def build_tree(train_label, train_table):
     return
 
 
-def run_method_dtree(train_label, train_table, test_label, test_table):
-    tree = treebuilder.DecisionTree()
-    tree.fit(train_label, train_table, continuity_check)
-
-    return run_test(tree, run_data)
+# def run_method_dtree(train_label, train_table, test_label, test_table):
+#     tree = treebuilder.DecisionTree()
+#     tree.fit(train_label, train_table, continuity_check)
+#
+#     return run_test(tree, run_data)
 
 
 def predict(label, table):
     train_label, train_table, test_label, test_table = div_table_train_test(label, table)
-    panda_df1 = pd.DataFrame(train_table, columns=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
-    panda_df2 = pd.DataFrame(train_label, columns=[16])
+    panda_df1 = pd.DataFrame(train_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    panda_df2 = pd.DataFrame(train_label, columns=[15])
     panda_df = panda_df1.join(panda_df2)
     print panda_df
-    # acc_train, acc_test = run_method_dtree(train_label, train_table, test_label, test_table)
-    # run_method_sklean(run_data)
-    # return acc_train, acc_test
+
+    panda_last_col_1 = panda_df.loc[panda_df[16] == 1]
+    panda_last_col_0 = panda_df.loc[panda_df[16] == 0]
+
+    panda_col1_a_p = panda_last_col_1.loc[panda_df[0] == 'a']
+    panda_col1_a_n = panda_last_col_0.loc[panda_df[0] == 'b']
+
+        # sum = panda_df.astype(bool).sum(axis=0)[16]
+        # test1 = [[1, 2, 3, 4, 5],[1, 2, 3, 4, 5],[0,0,0,0,0],[0,0,0,0,0],[1, 2, 0, 4, 0]]
+        # test2 = ['a','b','c','d','e']
+        # panda_test1 = pd.DataFrame(test1, columns=[1, 2, 3, 4, 5])
+        # panda_test2 = pd.DataFrame(test2, columns=[6])
+        # panda_test = panda_test1.join(panda_test2)
+        #
+        # print panda_test
+        # sum = panda_test.astype(bool).sum(axis=0)
+        # print sum
+        # acc_train, acc_test = run_method_dtree(train_label, train_table, test_label, test_table)
+        # run_method_sklean(run_data)
+        # return acc_train, acc_test
 
 
 if __name__ == '__main__':
