@@ -43,7 +43,7 @@ def naive_bayes():
     flabel.close()
     tlabel = open('testlabels.txt', 'r')
     timage = open('testimages.txt', 'r')
-    predict_label = open("output", 'w')
+    predict_label = open("output.txt", 'w')
 
     smoothing_value = 1
     test_data_count = 0
@@ -88,14 +88,38 @@ def naive_bayes():
     predict_label.close()
 
     test_label = open('testlabels.txt', 'r')
-    predict_label = open("output", 'r')
-    correct = 0
+    predict_label = open("output.txt", 'r')
+    correct_sum = 0
+    total_sum = 0
+    total_num_digits = []
+    correct_match_digits = []
+    buckets = []
+
+    for i in xrange(10):
+        total_num_digits.append(0)
+        correct_match_digits.append(0)
     for test_digit_line in test_label:
         actual_digit = int(test_digit_line)
+        total_num_digits[actual_digit] += 1
         predicted_digit = int(predict_label.readline().rstrip('\n'))
         if actual_digit == predicted_digit:
-            correct += 1
-    print correct
+            correct_match_digits[actual_digit] += 1
+    print "Number of each digit in test data and its corresponding match number:"
+    for i in xrange(10):
+        print "Digit", i, ":", "Test data occurrence:", total_num_digits[i], "; Matched successfully:", correct_match_digits[i]
+        total_sum += total_num_digits[i]
+        correct_sum += correct_match_digits[i]
+    print
+
+    print "Percentage precision for each digit:"
+    for i in xrange(10):
+        print "Digit", i, ":",
+        print (correct_match_digits[i]*100) / float(total_num_digits[i]), "%"
+    print
+
+    print "Total number of digits in test data:", total_sum
+    print "Total number of matched digits:", correct_sum
+    print "Overall percentage of precision:", (correct_sum * 100) / float(total_sum), "%"
 
     test_label.close()
     predict_label.close()
