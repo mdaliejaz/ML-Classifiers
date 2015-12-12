@@ -16,11 +16,12 @@ attributes = {0: ['b', 'a'], 3: ['u', 'y', 'l', 't'], 4: ['g', 'p', 'gg'],
 
 
 class TreeNode:
-    def __init__(self, column_name, edge_val, children, is_leaf):
+    def __init__(self, column_name, edge_val, children, is_leaf, value):
         self.column_name = column_name
         self.edge_val = edge_val
         self.children = children
         self.is_leaf = is_leaf
+        self.value = value
 
 
 def average_none(table, column):
@@ -179,7 +180,8 @@ def find_node_with_max_entropy(panda_df):
 
 def build_tree(panda_df, column_name, edge_val, is_leaf):
     if is_leaf is True or column_name == 15:
-        return TreeNode(column_name, edge_val, None, is_leaf)
+        value = panda_df.loc[panda_df.index[0], 15]
+        return TreeNode(column_name, edge_val, None, 1, value)
     children_edges = list(panda_df[column_name].unique())
     children = []
     for child_edge in children_edges:
@@ -189,12 +191,12 @@ def build_tree(panda_df, column_name, edge_val, is_leaf):
         if child_column_name == -1:
             child_column_name = random.choice(child_df.columns)
         is_leaf = 0
-        edges = list(panda_df[child_column_name].unique())
-        if len(edges) == 1:
+        # edges = list(panda_df[child_column_name].unique())
+        if len(child_df.loc[child_df[15] == 1]) == len(child_df.index):
             is_leaf = 1
         child_node = build_tree(child_df, child_column_name, child_edge, is_leaf)
         children.append(child_node)
-    return TreeNode(column_name, edge_val, children, is_leaf)
+    return TreeNode(column_name, edge_val, children, is_leaf, None)
 
 
 def construct_tree(panda_df):
@@ -206,6 +208,36 @@ def construct_tree(panda_df):
     # root = TreeNode(column_name, None, children_no, 0)
     return build_tree(panda_df, column_name, None, 0)
 
+
+def predict_value(node, row):
+    edge_val = row[node.column_name]
+    if node.is_leaf:
+        return node.value
+    for child in node.children:
+        if child.edge_val == edge_val:
+            if child.is_leaf:
+                return child.value
+            else:
+                predict_value(child, row)
+
+
+
+def get_accuracy(root, panda_dft):
+    count = 0
+    for row in map(list, panda_dft.values):
+        predicted_value = predict_value(root,row)
+        if predicted_value == row[15]:
+            count +=1
+    print count
+
+
+    # pred_label = tree.predict(test_data)
+
+    # diff = 0
+    # for i in xrange(test_size):
+    #     if test_label[i] != pred_label[i]:
+    #         diff += 1
+    # return (test_size-diff) * 1.0 / test_size
 
 
 if __name__ == '__main__':
@@ -221,6 +253,10 @@ if __name__ == '__main__':
     print col_with_max_entropy
     root = construct_tree(panda_df)
     print root
+    panda_dft1 = pd.DataFrame(test_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    panda_dft2 = pd.DataFrame(test_label, columns=[15])
+    panda_dft = panda_dft1.join(panda_dft2)
+    get_accuracy(root, panda_dft)
 
 
     # print 'training accuracy "
