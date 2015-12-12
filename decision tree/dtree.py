@@ -1,3 +1,4 @@
+from math import log
 from random import shuffle
 
 import pandas as pd
@@ -6,6 +7,11 @@ continuity_check = [0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1]
 columns = 15
 total_data = 600
 split_train_test_at = 400
+
+attributes = {0: ['b', 'a', 'c'], 3: ['u', 'y', 'l', 't'], 4: ['g', 'p', 'gg'],
+              5: ['c', 'd', 'cc', 'i', 'j', 'k', 'm', 'r', 'q', 'w', 'x', 'e', 'aa', 'ff'],
+              6: ['v', 'h', 'bb', 'j', 'n', 'z', 'dd', 'ff', 'o'], 8: ['t', 'f'],
+              9: ['t', 'f'], 11: ['t', 'f'], 12: ['g', 'p', 's']}
 
 
 def average_none(table, column):
@@ -107,13 +113,58 @@ def find_majority(train_label):
     else:
         return 0
 
+def calculate_entropy(panda_df, col):
+    entropy_for_col = 0
+    # Find entropy for each attribute in a column
+    # print col
+    # print attributes[col]
+    for attrib in attributes[col]:
+        panda_col_value = panda_df.loc[panda_df[col] == attrib]
+        if len(panda_col_value.index) == 0:
+            # no row for such a attrib
+            continue
+        # print panda_col_value
+        # print len(panda_col_value.index)
+        # panda_col_value_plus = panda_col_value.loc[panda_col_value[15] == 1]
+        # panda_col_value_minus = panda_col_value.loc[panda_col_value[15] == 0]
+        # print len(panda_col_value_plus)
+        # print len(panda_col_value_minus)
 
 
-def find_node_with_max_entropy(label, table):
-    # panda_df1 = pd.DataFrame(train_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
-    # panda_df2 = pd.DataFrame(train_label, columns=[15])
-    # panda_df = panda_df1.join(panda_df2)
+        plus_probability = len (panda_col_value.loc[panda_col_value[15] == 1]) / float(len(panda_col_value.index))
+        minus_probability = len (panda_col_value.loc[panda_col_value[15] == 0]) / float(len(panda_col_value.index))
+        # print plus_probability
+        # print minus_probability
+
+        # if either plus_probabilty or minus_probability is 0 then set_entropy to 0 for that attribute
+        if plus_probability == 0 or minus_probability == 0:
+            entropy_for_each_attrib = 0
+        else:
+            entropy_for_each_attrib = (-1 * plus_probability * log(plus_probability)) + (-1 * minus_probability * log(minus_probability))
+            # print entropy_for_each_attrib
+        entropy_for_col += entropy_for_each_attrib
+    # print entropy_for_col
+    return entropy_for_col
+
+
+def find_node_with_max_entropy(panda_df):
+
     # print panda_df
+
+    # Need to find entropy for each column and return the column number with max entropy
+    col_with_max_entropy = 0
+    max_col_entropy = 1000
+    # print panda_df.columns
+    for col in (panda_df.columns):
+        if col in (1, 2, 7, 10, 13, 14, 15):
+            continue
+        # print col
+        col_entropy = calculate_entropy(panda_df, col)
+        if col_entropy < max_col_entropy:
+            max_col_entropy = col_entropy
+            col_with_max_entropy = col
+    return col_with_max_entropy
+
     #
     # panda_last_col_1 = panda_df.loc[panda_df[16] == 1]
     # panda_last_col_0 = panda_df.loc[panda_df[16] == 0]
@@ -125,8 +176,15 @@ def find_node_with_max_entropy(label, table):
 if __name__ == '__main__':
     label, table = construct_table()
     table = replace_none_in_table(table)
-    print table
+    # print table
     train_label, train_table, test_label, test_table = div_table_train_test(label, table)
+    panda_df1 = pd.DataFrame(train_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    panda_df2 = pd.DataFrame(train_label, columns=[15])
+    panda_df = panda_df1.join(panda_df2)
+    # construct_tree(panda_df)
+
+    col_with_max_entropy = find_node_with_max_entropy(panda_df)
+    print col_with_max_entropy
     # find_node
 
     # predict(label, table)
