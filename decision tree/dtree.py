@@ -1,5 +1,6 @@
 from math import log
 from random import shuffle
+import random
 
 import pandas as pd
 
@@ -8,10 +9,18 @@ columns = 15
 total_data = 600
 split_train_test_at = 400
 
-attributes = {0: ['b', 'a', 'c'], 3: ['u', 'y', 'l', 't'], 4: ['g', 'p', 'gg'],
+attributes = {0: ['b', 'a'], 3: ['u', 'y', 'l', 't'], 4: ['g', 'p', 'gg'],
               5: ['c', 'd', 'cc', 'i', 'j', 'k', 'm', 'r', 'q', 'w', 'x', 'e', 'aa', 'ff'],
               6: ['v', 'h', 'bb', 'j', 'n', 'z', 'dd', 'ff', 'o'], 8: ['t', 'f'],
               9: ['t', 'f'], 11: ['t', 'f'], 12: ['g', 'p', 's']}
+
+
+class TreeNode:
+    def __init__(self, column_name, edge_val, children, is_leaf):
+        self.column_name = column_name
+        self.edge_val = edge_val
+        self.children = children
+        self.is_leaf = is_leaf
 
 
 def average_none(table, column):
@@ -113,6 +122,7 @@ def find_majority(train_label):
     else:
         return 0
 
+
 def calculate_entropy(panda_df, col):
     entropy_for_col = 0
     # Find entropy for each attribute in a column
@@ -131,8 +141,8 @@ def calculate_entropy(panda_df, col):
         # print len(panda_col_value_minus)
 
 
-        plus_probability = len (panda_col_value.loc[panda_col_value[15] == 1]) / float(len(panda_col_value.index))
-        minus_probability = len (panda_col_value.loc[panda_col_value[15] == 0]) / float(len(panda_col_value.index))
+        plus_probability = len(panda_col_value.loc[panda_col_value[15] == 1]) / float(len(panda_col_value.index))
+        minus_probability = len(panda_col_value.loc[panda_col_value[15] == 0]) / float(len(panda_col_value.index))
         # print plus_probability
         # print minus_probability
 
@@ -140,7 +150,8 @@ def calculate_entropy(panda_df, col):
         if plus_probability == 0 or minus_probability == 0:
             entropy_for_each_attrib = 0
         else:
-            entropy_for_each_attrib = (-1 * plus_probability * log(plus_probability)) + (-1 * minus_probability * log(minus_probability))
+            entropy_for_each_attrib = (-1 * plus_probability * log(plus_probability)) + (
+            -1 * minus_probability * log(minus_probability))
             # print entropy_for_each_attrib
         entropy_for_col += entropy_for_each_attrib
     # print entropy_for_col
@@ -148,16 +159,16 @@ def calculate_entropy(panda_df, col):
 
 
 def find_node_with_max_entropy(panda_df):
-
     # print panda_df
 
     # Need to find entropy for each column and return the column number with max entropy
-    col_with_max_entropy = 0
+    col_with_max_entropy = -1
     max_col_entropy = 1000
     # print panda_df.columns
     for col in (panda_df.columns):
         if col in (1, 2, 7, 10, 13, 14, 15):
             continue
+            # return random.choice([1, 2, 7, 10, 13, 14])
         # print col
         col_entropy = calculate_entropy(panda_df, col)
         if col_entropy < max_col_entropy:
@@ -165,27 +176,51 @@ def find_node_with_max_entropy(panda_df):
             col_with_max_entropy = col
     return col_with_max_entropy
 
-    #
-    # panda_last_col_1 = panda_df.loc[panda_df[16] == 1]
-    # panda_last_col_0 = panda_df.loc[panda_df[16] == 0]
-    #
-    # panda_col1_a_p = panda_last_col_1.loc[panda_df[0] == 'a']
-    # panda_col1_a_n = panda_last_col_0.loc[panda_df[0] == 'b']
+
+def build_tree(panda_df, column_name, edge_val, is_leaf):
+    if is_leaf is True or column_name == 15:
+        return TreeNode(column_name, edge_val, None, is_leaf)
+    children_edges = list(panda_df[column_name].unique())
+    children = []
+    for child_edge in children_edges:
+        child_df = panda_df.loc[panda_df[column_name] == child_edge]
+        child_df = child_df.drop(column_name, 1)
+        child_column_name = find_node_with_max_entropy(child_df)
+        if child_column_name == -1:
+            child_column_name = random.choice(child_df.columns)
+        is_leaf = 0
+        edges = list(panda_df[child_column_name].unique())
+        if len(edges) == 1:
+            is_leaf = 1
+        child_node = build_tree(child_df, child_column_name, child_edge, is_leaf)
+        children.append(child_node)
+    return TreeNode(column_name, edge_val, children, is_leaf)
+
+
+def construct_tree(panda_df):
+    column_name = find_node_with_max_entropy(panda_df)
+    # children_node = []
+    # for child in children:
+    #     child_node = TreeNode(None, child, None, 0)
+    #     children_node.append(child_node)
+    # root = TreeNode(column_name, None, children_no, 0)
+    return build_tree(panda_df, column_name, None, 0)
+
 
 
 if __name__ == '__main__':
     label, table = construct_table()
     table = replace_none_in_table(table)
-    # print table
+
     train_label, train_table, test_label, test_table = div_table_train_test(label, table)
     panda_df1 = pd.DataFrame(train_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
     panda_df2 = pd.DataFrame(train_label, columns=[15])
     panda_df = panda_df1.join(panda_df2)
-    # construct_tree(panda_df)
 
     col_with_max_entropy = find_node_with_max_entropy(panda_df)
     print col_with_max_entropy
-    # find_node
+    root = construct_tree(panda_df)
+    print root
 
-    # predict(label, table)
-    # print 'training accuracy is %.2f%%; test accuracy is %.2f%%' % (acc_train * 100, acc_test * 100)
+
+    # print 'training accuracy "
