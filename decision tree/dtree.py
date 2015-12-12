@@ -1,6 +1,5 @@
-from collections import defaultdict
-from math import log
 from random import shuffle
+
 import pandas as pd
 
 continuity_check = [0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1]
@@ -109,49 +108,26 @@ def find_majority(train_label):
         return 0
 
 
-def build_tree(train_label, train_table):
-    majority = find_majority(train_label)
-    return
 
-
-# def run_method_dtree(train_label, train_table, test_label, test_table):
-#     tree = treebuilder.DecisionTree()
-#     tree.fit(train_label, train_table, continuity_check)
-#
-#     return run_test(tree, run_data)
-
-
-def predict(label, table):
-    train_label, train_table, test_label, test_table = div_table_train_test(label, table)
-    panda_df1 = pd.DataFrame(train_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
-    panda_df2 = pd.DataFrame(train_label, columns=[15])
-    panda_df = panda_df1.join(panda_df2)
-    print panda_df
-
-    panda_last_col_1 = panda_df.loc[panda_df[16] == 1]
-    panda_last_col_0 = panda_df.loc[panda_df[16] == 0]
-
-    panda_col1_a_p = panda_last_col_1.loc[panda_df[0] == 'a']
-    panda_col1_a_n = panda_last_col_0.loc[panda_df[0] == 'b']
-
-        # sum = panda_df.astype(bool).sum(axis=0)[16]
-        # test1 = [[1, 2, 3, 4, 5],[1, 2, 3, 4, 5],[0,0,0,0,0],[0,0,0,0,0],[1, 2, 0, 4, 0]]
-        # test2 = ['a','b','c','d','e']
-        # panda_test1 = pd.DataFrame(test1, columns=[1, 2, 3, 4, 5])
-        # panda_test2 = pd.DataFrame(test2, columns=[6])
-        # panda_test = panda_test1.join(panda_test2)
-        #
-        # print panda_test
-        # sum = panda_test.astype(bool).sum(axis=0)
-        # print sum
-        # acc_train, acc_test = run_method_dtree(train_label, train_table, test_label, test_table)
-        # run_method_sklean(run_data)
-        # return acc_train, acc_test
+def find_node_with_max_entropy(label, table):
+    # panda_df1 = pd.DataFrame(train_table, columns=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    # panda_df2 = pd.DataFrame(train_label, columns=[15])
+    # panda_df = panda_df1.join(panda_df2)
+    # print panda_df
+    #
+    # panda_last_col_1 = panda_df.loc[panda_df[16] == 1]
+    # panda_last_col_0 = panda_df.loc[panda_df[16] == 0]
+    #
+    # panda_col1_a_p = panda_last_col_1.loc[panda_df[0] == 'a']
+    # panda_col1_a_n = panda_last_col_0.loc[panda_df[0] == 'b']
 
 
 if __name__ == '__main__':
     label, table = construct_table()
     table = replace_none_in_table(table)
     print table
-    predict(label, table)
+    train_label, train_table, test_label, test_table = div_table_train_test(label, table)
+    # find_node
+
+    # predict(label, table)
     # print 'training accuracy is %.2f%%; test accuracy is %.2f%%' % (acc_train * 100, acc_test * 100)
