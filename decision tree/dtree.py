@@ -93,7 +93,7 @@ def get_shuffled_indices():
 
 
 def div_table_train_test(label, table):
-    shuffled_indices = get_shuffled_indices()
+    shuffled_indices = [i for i in xrange(total_data)]
     train_label = [label[shuffled_indices[i]] for i in xrange(split_train_test_at)]
     train_table = [table[shuffled_indices[i]] for i in xrange(split_train_test_at)]
     test_label = [label[shuffled_indices[i]] for i in xrange(split_train_test_at, 600)]
@@ -217,4 +217,4 @@ if __name__ == '__main__':
 
     accuracy = get_accuracy(root, panda_dft)
 
-    print "accuracy:", accuracy, "%"
+    print "accuracy of test data obtained:", accuracy, "%"

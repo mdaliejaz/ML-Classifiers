@@ -93,7 +93,6 @@ def naive_bayes():
     total_sum = 0
     total_num_digits = []
     correct_match_digits = []
-    buckets = []
 
     for i in xrange(10):
         total_num_digits.append(0)
@@ -106,7 +105,8 @@ def naive_bayes():
             correct_match_digits[actual_digit] += 1
     print "Number of each digit in test data and its corresponding match number:"
     for i in xrange(10):
-        print "Digit", i, ":", "Test data occurrence:", total_num_digits[i], "; Matched successfully:", correct_match_digits[i]
+        print "Digit", i, ":", "Test data occurrence:", total_num_digits[i], "; Matched successfully:", \
+        correct_match_digits[i]
         total_sum += total_num_digits[i]
         correct_sum += correct_match_digits[i]
     print
@@ -114,7 +114,7 @@ def naive_bayes():
     print "Percentage precision for each digit:"
     for i in xrange(10):
         print "Digit", i, ":",
-        print (correct_match_digits[i]*100) / float(total_num_digits[i]), "%"
+        print (correct_match_digits[i] * 100) / float(total_num_digits[i]), "%"
     print
 
     print "Total number of digits in test data:", total_sum
