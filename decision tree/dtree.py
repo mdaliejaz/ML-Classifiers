@@ -1,5 +1,4 @@
 from math import log
-from random import shuffle
 import random
 
 import pandas as pd
@@ -86,18 +85,12 @@ def construct_table():
     return label, table
 
 
-def get_shuffled_indices():
-    total_data_indices = [i for i in xrange(total_data)]
-    shuffle(total_data_indices)
-    return total_data_indices
-
-
 def div_table_train_test(label, table):
-    shuffled_indices = [i for i in xrange(total_data)]
-    train_label = [label[shuffled_indices[i]] for i in xrange(split_train_test_at)]
-    train_table = [table[shuffled_indices[i]] for i in xrange(split_train_test_at)]
-    test_label = [label[shuffled_indices[i]] for i in xrange(split_train_test_at, 600)]
-    test_table = [table[shuffled_indices[i]] for i in xrange(split_train_test_at, 600)]
+    row_indices = [i for i in xrange(total_data)]
+    train_label = [label[row_indices[i]] for i in xrange(split_train_test_at)]
+    train_table = [table[row_indices[i]] for i in xrange(split_train_test_at)]
+    test_label = [label[row_indices[i]] for i in xrange(split_train_test_at, 600)]
+    test_table = [table[row_indices[i]] for i in xrange(split_train_test_at, 600)]
     return train_label, train_table, test_label, test_table
 
 
@@ -217,4 +210,4 @@ if __name__ == '__main__':
 
     accuracy = get_accuracy(root, panda_dft)
 
-    print "accuracy of test data obtained:", accuracy, "%"
+    print "Accuracy of test data obtained:", accuracy, "%"
